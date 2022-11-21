@@ -10,48 +10,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// model User {
-//   id String @id @default(uuid())
-//   email         String        @unique
-//   password      String
-//   refreshTokens RefreshToken[] @relation("UserRefreshToken")
-//   createdAt     DateTime       @default(now())
-//   updatedAt     DateTime   @default(now())    @updatedAt
-//   products Product[] @relation("UserProducts")
-
-// }
-// // model User {
-// //   id Int @id @default(autoincrement())
-// //   username String @unique
-// //   password String 
-// //   products Product[] @relation("UserProducts")
-// // }
-// model Product { 
-//    id Int @id @default(autoincrement())
-//    name String 
-//    price Int 
-//    inCart Int
-//    createdAt DateTime @default(now())
-//    category Category @relation(fields: [categoryId], references: [id] , name: "CategoryProducts")
-//    categoryId Int @default(1)
-//    user User @relation( fields: [userId], references: [id]  , name: "UserProducts" )
-//    userId String 
-// }
-// model Category {
-//   id Int @id @default(autoincrement()) 
-//   name String @unique
-//   products Product[]   @relation("CategoryProducts")
-// }
-
-// model RefreshToken {
-//  id Int @id @default(autoincrement())
-//   hashedToken String
-//   userId      String
-//   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade , name: "UserRefreshToken")
-//   revoked     Boolean  @default(false)
-//   createdAt   DateTime @default(now())
-//   updatedAt   DateTime @updatedAt
-// }
 model User {
   id            String         @id @unique @default(uuid())
   email         String         @unique
@@ -60,7 +18,10 @@ model User {
   refreshTokens RefreshToken[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
-  products Courses[] @relation("UserProducts")
+  products Courses[] @relation("UserCourses")
+  subscription Subscription[] @relation("usersSubscription")
+ comments Comments[] @relation("usersComments")
+
 }
 
 model RefreshToken {
@@ -78,17 +39,39 @@ model Courses {
    name String 
    cost Int 
    info String? 
+   rate Float @default(0)
+   subscribers Int @default(0)
    daysInWeek Int? @default(3)
    weeks Int?  @default(12)
+   likes Int @default(0)
    createdAt DateTime @default(now())
-   user User @relation( fields: [userId], references: [id]  , name: "UserProducts" )
+   user User @relation( fields: [userId], references: [id]  , name: "UserCourses" )
    userId String 
- category Category @relation(fields: [categoryId], references: [id] , name: "CategoryProducts")
+ category Category @relation(fields: [categoryId], references: [id] , name: "coursesCategory")
  categoryId Int 
-
+ subscription Subscription[] @relation("courseSubscription")
+ comments Comments[] @relation("courseComments")
 }
 model Category {
   id Int @id @default(autoincrement()) 
   name String @unique
-  products Courses[]   @relation("CategoryProducts")
+  products Courses[]   @relation("coursesCategory")
+  
+}
+model Subscription {
+id Int @id @default(autoincrement())
+courseId Int 
+course Courses @relation(fields: [courseId], references: [id] , name: "courseSubscription")
+userId String
+users User @relation(fields: [userId], references: [id] , name: "usersSubscription")
+
+}
+model Comments {
+id Int @id @default(autoincrement())
+comment String? 
+courseId Int 
+course Courses @relation(fields: [courseId], references: [id] , name: "courseComments")
+userId String
+users User @relation(fields: [userId], references: [id] , name: "usersComments")
+
 }
