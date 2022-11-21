@@ -39,7 +39,9 @@ model Courses {
    name String 
    cost Int 
    info String? 
-   rate Float @default(0)
+   rate Float @default(2.5)
+   rateNum Int @default(1)
+
    subscribers Int @default(0)
    daysInWeek Int? @default(3)
    weeks Int?  @default(12)

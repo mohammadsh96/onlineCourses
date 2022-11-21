@@ -116,6 +116,34 @@ async function likeOnCourse(courseId) {
       subscription: true,
     },
   });
+  
+}
+async function rateOnCourse(courseId,rate) {
+  let course = await db.courses.findUnique({
+    where: {
+      id: courseId,
+    },
+  });
+  
+  let rateNum = course.rateNum ;
+  let previousRate=course.rate;
+  let newrateNum=rateNum+1
+  let newrate= (previousRate*rateNum + rate)/newrateNum
+  let newrecord = await db.courses.update({
+    data: {
+      rateNum: newrateNum,
+      rate:newrate,
+    },
+    where: {
+      id: courseId,
+    },
+    include: {
+      comments: true,
+      category: true,
+      subscription: true,
+    },
+  });
+  return newrecord
 }
 async function fetchSubscriptions(userId) {
  let subscribtios=await db.subscription.findMany({
@@ -133,7 +161,60 @@ let  courses = await db.courses.findMany({
 })
 return courses
 }
+async function getCourseLikes(courseId,userId) {
+ let course= await db.courses.findUnique({
+   where: {
+    id:courseId,
+  },
+  select : {
+    userId: true,
+    comments: true,
+    likes : true,
+    rateNum: true,
+    rate: true,
+  }
+  });
+  if(course.userId===userId){
+    return course
+  }else{
+    return{msg: "you are not allowed to check comments on this course"}
+  }
 
+  }
+  async function updateCourseById(courseId ,data,userId){
+    let course =await db.courses.findUnique({where :{
+      id: courseId,
+    },
+
+  })
+  if(course.userId===userId){
+
+    return db.courses.update({where :{
+      id: courseId,
+    },
+  data:data,
+  })
+  }
+  else return {msg:"You do not have premessions to update this course"}
+  }
+
+
+  async function deleteCourseById(courseId ,userId){
+    let course =await db.courses.findUnique({where :{
+      id: courseId,
+    },
+
+  })
+  if(course.userId===userId){
+
+  let deleted = await db.courses.delete({where :{
+      id: courseId,
+    } 
+  })
+ if(deleted) return {msg:"Course deleted successfully"}
+  }
+  else return {msg:"You do not have premessions to update this course"}
+  }
 module.exports = {
   findUserByEmail,
   findUserById,
@@ -146,5 +227,8 @@ module.exports = {
   commentOnCourse,
   likeOnCourse,
   fetchSubscriptions,
-
+  getCourseLikes,
+  rateOnCourse,
+  updateCourseById,
+  deleteCourseById,
 };
